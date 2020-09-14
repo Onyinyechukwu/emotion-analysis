@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sept 8 2020
+
+@author: Onyinye Chudi
+"""
+
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import LinearSVC
+import re
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+import pickle
+from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.model_selection import train_test_split, GridSearchCV
+
+df = pd.read_csv('text_model.csv')
+X = df["Text"]
+y = np.array(df["Emotion"])
+
+X_T = []
+
+
+def remove_ws(documents):
+    for sentence in documents:
+        print(sentence)
+        new_sent = sentence.strip()
+        new_sent = re.sub(r'[^A-Za-z0-9 ]+', '', new_sent)
+        new_sent = new_sent.lower()
+        X_T.append(new_sent)
+
+remove_ws(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X_T, y, test_size=0.3, random_state=5)
+
+model = Pipeline([
+    ('vectorizer', CountVectorizer()),
+    ('tfidf', TfidfTransformer()),
+    ('clf', OneVsRestClassifier(LinearSVC()))])
+
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+model.classes_
+
+confusion_matrix(pred, y_test)
+accuracy_score(y_test, pred)
+
+pickle.dump(model,open('model.pkl','wb'))
+
+joblib.dump(model, 'model_topics.pkl', compress=1)
+
+def mainModel(text):
+    # Deployment bit
+    model = joblib.load('model_topics.pkl')
+
+    # question = "Hello, how are you?"
+    predicted = model.predict([text])
+
+    return predicted
