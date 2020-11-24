@@ -1,2 +1,2 @@
-# miscellanoeus
-This Repo contains different miscellaneous projects I have worked on in the past
+# Emotion Classification Project
+This Repo contains information on a small emotion classifier I built in the past.
